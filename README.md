@@ -23,9 +23,12 @@ But, these 3 values (004, 191, 060) don't seem to be important.
 ## Command-Glossary
 
 ### Version
-
-:IN:  01:00:81                                                                  
-:OUT: 01:00:02
+<dl>
+  <dt>IN</dt>
+  <dd>01:00:81</dd>
+  <dt>OUT</dt>
+  <dd>01:00:02</dd>
+</dl>
 
     0000 0000 1800 0000 108B 0000 0000 0000 
     0000 0000 0000 0000 0000 0000 0000 0000
