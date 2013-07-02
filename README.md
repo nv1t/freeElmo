@@ -2,6 +2,12 @@
 
 MultiOS Client for Elmo Document Camera
 
+[Elmo](http://www.elmo-germany.de) is a company which sells high res document viewer 
+and other education based equipment like voting systems and similar.
+
+We are currently only focused on the document camera itself, because we have only access
+to these. 
+
 (currently is everything based on the L-12, predecessor of the TT-12)
 
 ## Communication between ImageMate and Elmo
@@ -23,7 +29,8 @@ But, these 3 values (004, 191, 060) don't seem to be important.
 ## Command-Glossary
 
 **Version**
-IN 01:00:81, OUT 01:00:02
+
+(IN 01:00:81, OUT 01:00:02)
 
     << 0000 0000 1800 0000 108B 0000 0000 0000 
     << 0000 0000 0000 0000 0000 0000 0000 0000
@@ -31,7 +38,8 @@ IN 01:00:81, OUT 01:00:02
     >> 0000 0000 0000 0000 0000 0000 0000 0000  ................
 
 **Sync1**
-IN 01:00:81, OUT 01:00:02
+
+(IN 01:00:81, OUT 01:00:02)
 
     << 0000 0000 1800 0000 118B 0000 0000 0000
     << 0000 0000 0000 0000 0000 0000 0000 0000
@@ -39,7 +47,8 @@ IN 01:00:81, OUT 01:00:02
     >> 2E30 3034 0000 0000 0000 0000 0000 0000  .004............
 
 **Sync2**
-IN 01:00:81, OUT 01:00:02
+
+(IN 01:00:81, OUT 01:00:02)
 
     << 0000 0000 1800 0000 118B 0000 0100 0000                                       
     << 0000 0000 0000 0000 0000 0000 0000 0000
@@ -47,7 +56,8 @@ IN 01:00:81, OUT 01:00:02
     >> 2E31 3931 0000 0000 0000 0000 0000 0000  .191............
 
 **Sync3**
-IN 01:00:81, OUT 01:00:02
+
+(IN 01:00:81, OUT 01:00:02)
 
     << 0000 0000 1800 0000 118B 0000 0200 0000                                       
     << 0000 0000 0000 0000 0000 0000 0000 0000                                       
@@ -55,7 +65,8 @@ IN 01:00:81, OUT 01:00:02
     >> 2E30 3630 0000 0000 0000 0000 0000 0000  .060............
 
 **Picture**
-IN 01:00:83, OUT 01:00:04
+
+(IN 01:00:83, OUT 01:00:04)
 
     << 0000 0000 1800 0000 8E80 0000 5000 0000 
     << 0000 0000 0000 0000 0000 0000 0000 0000
