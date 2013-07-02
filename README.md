@@ -1,16 +1,18 @@
-# freeElmo
+freeElmo
+========
 
-MultiOS Client for Elmo Document Camera
+MultiOS Client for Elmo Document Camera based on libusb.
 
 [Elmo](http://www.elmo-germany.de) is a company which sells high res document viewer 
-and other education based equipment like voting systems and similar.
+and other education based equipment, like voting systems and similar.
 
-We are currently only focused on the document camera itself, because we have only access
-to these. 
+We are currently only focused on the document camera itself.
+The only camera we have on hand is a L-12 (predecessor of TT-12)
 
-(currently is everything based on the L-12, predecessor of the TT-12)
 
-## Communication between ImageMate and Elmo
+
+Communication between ImageMate and Elmo
+----------------------------------------
 
 1. Version
 2. Sync1
@@ -20,13 +22,10 @@ to these.
 6. Version
 7. Picture
 8. Version
-usw.
+...
 
-We have absolutly no idea what are the values which  are returned in 2-4. 
-But, these 3 values (004, 191, 060) don't seem to be important.
-
-
-## Command-Glossary
+Command-Glossary
+----------------
 
 **Version**
 
@@ -77,5 +76,5 @@ But, these 3 values (004, 191, 060) don't seem to be important.
     >> 0200 0000 F8FE 0000 PPPPPPPPPPPPPPPPPPP
     >> PPPP ....
 
-* X stands for size of picture without header
-* P is picture data as bytestream splitted in 65272 bytes and header
+* X : size of picture without header
+* P : picture as bytestream splitted in 65272 bytes + 8 byte header
