@@ -1,53 +1,79 @@
-import usb.core
-import usb.util
+import libusb0 as usb
 from PIL import Image
 import cStringIO as StringIO                                                    
 import sys
 
 class Elmo:
-    device = None
-    msg = {
-        'version': [0,0,0,0,0x18,0,0,0,0x10,0x8B,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-        'picture': [0,0,0,0,0x18,0,0,0,0x8e,0x80,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-        'buttons': [0,0,0,0,24,0,0,0,0,15,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
-    }
-    last_image = None #Image.open("error.png")
-
-    def connect(self,vendor=0x09a1,product=0x001d):
-        self.device = usb.core.find(idVendor=vendor, idProduct=product)
-        
-        if self.device is None:
-            return -1
-        else:
-            if self.device.is_kernel_driver_active(0):
-                self.device.detach_kernel_driver(0)
-                usb.util.claim_interface(self.device, 0)
-        self.device.reset()                                                                  
-        self.device.set_configuration()
+    def __init__(self):
+        self.msg = {
+            'version': [0,0,0,0,0x18,0,0,0,0x10,0x8B,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+            'picture': [0,0,0,0,0x18,0,0,0,0x8e,0x80,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+            'buttons': [0,0,0,0,24,0,0,0,0,15,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+        }
+        self.last_image = None #Image.open("error.png")
+        self._handle = None
+        self.connect()
 
         return self
 
-    def version(self):
-        self.device.write(self.device[0][(0,0)][1].bEndpointAddress,self.msg['version'],0)
-        ret = self.device.read(self.device[0][(0,0)][0].bEndpointAddress,32)
-        return ret
-    
-    def cleardevice(self):
-        '''Clear the devices memory'''
-        while True:
-            try:
-                results = self.device.read(0x83, 512)
-            except usb.core.USBError as e:
-                if e.args[0] == 'Operation timed out' :
-                    break # timeout and swiped means we are done
+    def __del__(self):
+        self.close()
 
+    def connect(self,vendor=0x09a1,product=0x001d):
+        if self._handle != None:
+            self.close()
+   
+        for dev in usb.get_device_list(): 
+            desc = dev.descriptor 
+            if desc.idVendor==vendor and desc.idProduct==product):
+                handle = usb.open(dev)  # Need to open the device to query string descriptors
+                try:                                                        
+                    usb.set_configuration( handle, 1 ) 
+                    usb.claim_interface( handle, 0 ) 
+                    self._handle = handle 
+
+                    return                                              
+                except:                                                     
+                    usb.close(handle) 
+                    raise 
+        raise Exception('Device not found.') 
+
+        return self
+
+    def close(self):
+        if self._handle != None:
+            usb.close( self._handle )
+            self._handle = None
+
+    def _write(self, ep_out, data ):
+        """ Write raw data to the device. Data should be list-like or a single integer.
+            Data is automatically cropped or filled to the required endpoint size.  """
+        if self._handle is None: 
+            raise Exception("Invalid device.") 
+        try: iter(data)      # Try to iterate. 
+        except TypeError: 
+            data = (data,)  # Convert to tuple. 
+        usb.interrupt_write( self._handle, ep_out, bytearray(data), len(data) )
+
+    def _read(self,ep_in,size_in): 
+        """ Read raw data from the device.""" 
+        if self._handle is None:
+            raise Exception("Invalid device") 
+        data = usb.create_data_buffer(size_in)
+        usb.interrupt_read( self._handle, ep_in, data, size_in )
+        return bytearray(data)
+
+    def version(self):
+        self._write(0x02,self.msg('version'))
+        return self._read(0x81,32)
+    
     def get_image(self):
         # Try to read a picture until you get a valid stream
         try:
-            self.device.write(0x04, self.msg['picture'],0)
-            tmp = self.device.read(0x83,32)
+            self._write(0x04,self.msg('picture'))
+            tmp = self._read(0x83,32)
         except:
-            self.cleardevice()
+            #self.cleardevice()
             return self.last_image
 
         # Every package has a defined length in byte 4/5 of the first 8 Bytes
@@ -57,12 +83,11 @@ class Elmo:
         answer = []                                                                 
         while not finished:                                                         
             try:
-                ret = self.device.read(0x83,512)                                               
+                ret = self._read(0x83,512)                                               
                 size = 256*ret[5]+ret[4]#-(512-8) # Byte to integer 
                 answer += ret[8:]
-                answer += self.device.read(0x83,size)                                        
+                answer += self._read(0x83,size)                                        
             except:
-                self.cleardevice()
                 error = True
                 return self.last_image
                 break
@@ -79,5 +104,6 @@ class Elmo:
                 #pg_image = pygame.image.fromstring(image.tostring(), image.size, image.mode)
                 self.last_image = image
             except:
-                self.cleardevice()
+                pass
+                #self.cleardevice()
             return self.last_image
