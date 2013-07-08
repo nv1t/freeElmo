@@ -44,6 +44,10 @@ class Elmo:
             self.device.write(self.device[0][(0,0)][1].bEndpointAddress,self.msg['zoomout'],0)
             ret = self.device.read(self.device[0][(0,0)][0].bEndpointAddress,32)
 
+    def focus(self,i):
+        if i == 0: 
+            self.autofocus()
+
     def brightness(self,i):
         try:
             if i > i:
@@ -58,7 +62,7 @@ class Elmo:
             return False
 
     
-    def autofocs(self):
+    def autofocus(self):
         try:
             self.device.write(self.device[0][(0,0)][1].bEndpointAddress,self.msg['autofocus'],0) 
             ret = self.device.read(self.device[0][(0,0)][0].bEndpointAddress,32)

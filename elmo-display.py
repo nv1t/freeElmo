@@ -340,7 +340,7 @@ def events():
                     cam.focus(-1)
                 #wide focus
                 if (event.key == pygame.K_w and pygame.K_LCTRL) or (event.key == pygame.K_w and pygame.K_RCTRL):
-                    cam.foucs(1)
+                    cam.focus(1)
                 
 #################
 # main-function #
