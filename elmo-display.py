@@ -104,7 +104,7 @@ DGRAY = (48, 48, 48)
 ###############
 # global vars #
 ###############
-version = "0.5.6"
+version = "0.5.7"
 info = pygame.display.Info()
 fullscreen = False
 rotate = False
@@ -117,8 +117,8 @@ image_size = None
 screen_res = None
 screen = None
 cam_connect = -1
-error_no_elmo = False
-error_no_image = False
+error_no_elmo = True
+error_no_image = True
 
 #############
 # functions #
@@ -130,9 +130,27 @@ def draw_help(screen):
     global DGRAY 
     global version
     #define string to display 
-    my_string = "\n                               Help\n\n  Quit: Ctrl+Q, Alt+F4, Escape\n\n  Display Help: Ctrl+H, F1\n  Exit Help: Ctrl+H, F1, Escape\n\n  Toggle Fullscreen: Ctrl+F\n\n  Rotate Image: Ctrl+R\n  Rotate Image 90 Degree: Ctrl+D\n\n  Save Image: Ctrl+S\n\n  Free ELMO - Version "+version+"\n  (c)2013 nuit & McSumo\n\n"
+    my_string = """\n
+                   Help\n
+                   Quit: Ctrl+Q, Alt+F4, Escape
+                   Display Help: Ctrl+H, F1  
+                   Exit Help: Ctrl+H, F1, Escape\n
+                   Toggle Fullscreen: Ctrl+F
+                   Rotate Image 180 Degree: Ctrl+T
+                   Rotate Image 90 Degree: Ctrl+R\n
+                   Save Image: Ctrl+S\n
+                   Camera options:\n
+                   Zoom in: Ctrl+C
+                   Zoom out: Ctrl+V
+                   Brightness up: Ctrl+D
+                   Brightness down: Ctrl+X
+                   Autofocus: Ctrl+A
+                   Makro: Ctrl+E
+                   Wide: Ctrl+W\n\n
+                   Free ELMO - Version """+version+"""
+                   (c)2013 nuit & McSumo"""
     #create rectangle
-    textRect = pygame.Rect((0, 0, 400, 400))
+    textRect = pygame.Rect((0, 0, 400, 500))
     #set rectangle position to middle of the screen
     textRect.centerx = screen.get_rect().centerx
     textRect.centery = screen.get_rect().centery   
@@ -248,6 +266,9 @@ def reduce_to_screen_size(image):
 ##########
 def events():
     #var definitions
+    global elmo
+    global cam
+    global error_no_elmo
     global screen
     global image
     global fullscreen
@@ -282,9 +303,9 @@ def events():
             if (event.key == pygame.K_f and pygame.K_LCTRL) or (event.key == pygame.K_f and pygame.K_RCTRL):
                 toggle_fullscreen()
             #rotate display
-            if (event.key == pygame.K_r and pygame.K_LCTRL) or (event.key == pygame.K_r and pygame.K_RCTRL):
+            if (event.key == pygame.K_t and pygame.K_LCTRL) or (event.key == pygame.K_t and pygame.K_RCTRL):
                 rotate = not rotate
-            if (event.key == pygame.K_d and pygame.K_LCTRL) or (event.key == pygame.K_d and pygame.K_RCTRL):                    
+            if (event.key == pygame.K_r and pygame.K_LCTRL) or (event.key == pygame.K_r and pygame.K_RCTRL):                    
                 rotate_90 = rotate_90 + 1
                 if rotate_90 == 4:
                     rotate_90 = 0
@@ -297,7 +318,30 @@ def events():
             #exit help with escape
             if event.key == pygame.K_ESCAPE and display_help == True:
                 display_help = False
-
+            #ELMO-Functions like zoom, brightness, focus
+            if error_no_elmo == False:
+                #zoom in
+                if (event.key == pygame.K_c and pygame.K_LCTRL) or (event.key == pygame.K_c and pygame.K_RCTRL):
+                    cam.zoom(1)
+                #zoom out
+                if (event.key == pygame.K_v and pygame.K_LCTRL) or (event.key == pygame.K_v and pygame.K_RCTRL):
+                    cam.zoom(-1)
+                #brightness up
+                if (event.key == pygame.K_d and pygame.K_LCTRL) or (event.key == pygame.K_d and pygame.K_RCTRL):
+                    cam.brightness(1)
+                #brightness down
+                if (event.key == pygame.K_x and pygame.K_LCTRL) or (event.key == pygame.K_x and pygame.K_RCTRL):
+                    cam.brightness(-1)
+                #autofocus
+                if (event.key == pygame.K_a and pygame.K_LCTRL) or (event.key == pygame.K_a and pygame.K_RCTRL):
+                    cam.focus(0)
+                #macro focus
+                if (event.key == pygame.K_e and pygame.K_LCTRL) or (event.key == pygame.K_e and pygame.K_RCTRL):
+                    cam.focus(-1)
+                #wide focus
+                if (event.key == pygame.K_w and pygame.K_LCTRL) or (event.key == pygame.K_w and pygame.K_RCTRL):
+                    cam.foucs(1)
+                
 #################
 # main-function #
 #################
@@ -305,7 +349,7 @@ while 1:
     #################################
     # initialisation of ELMO device #
     #################################
-    if cam_connect == -1:
+    if error_no_elmo == True:
         try:    
             #camera module for testing
             #pygame.camera.init()
@@ -313,9 +357,9 @@ while 1:
             #cam.start() 
             cam = elmo.Elmo()
             cam_connect = cam.connect()
-            elmo_not_found = True if cam_connect == -1 else False
+            error_no_elmo = True if cam_connect == -1 else False
         except:
-            elmo_not_found = True
+            error_no_elmo = True
             
     #### IMPORTANT!!! ####
     # The order of the elements is important so be careful with changes
@@ -337,7 +381,7 @@ while 1:
         
         #test:
         #image = Image.open("test.jpg")
-        #cam_connect = 1
+        #error_no_elmo=False
         #:test
         
         image = pygame.image.fromstring(image.tostring(), image.size, image.mode)
@@ -381,22 +425,22 @@ while 1:
             draw_help(screen)
         
     if error_no_elmo or error_no_image:
-        error_no_elmo = False
         if screen_res == None:
-            screen_res = [540, 400]
+            screen_res = [400, 300]
         screen = pygame.display.set_mode(screen_res,RESIZABLE)
         pygame.display.set_caption(str("ERROR!!! - Free ELMO Version " + version)) #set msg of the window
         #define string to display
         error_string = ""
         if error_no_elmo:
-            error_string = error_string + "\n\n    No Camera found    \n\n"
+            error_string = error_string + "\n\n    No Camera found    "
         if error_no_image:
-            error_string = error_string + "\n\n    Didn't get a Image \n\n"
+            error_string = error_string + "\n\n    Didn't get a Image "
         #create rectangle
         textRect = pygame.Rect((0, 0, screen_res[0], screen_res[1]))
         #set rectangle position to middle of the screen
         textRect.centerx = screen.get_rect().centerx
-        textRect.centery = screen.get_rect().centery   
+        textRect.centery = screen.get_rect().centery  
+        
         #render the text for the rectangle
         rendered_text = render_textrect(error_string, basicFont, textRect, LGRAY, DGRAY, 0)
         if rendered_text:

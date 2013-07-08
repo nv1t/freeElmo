@@ -7,9 +7,18 @@ import sys
 class Elmo:
     device = None
     msg = {
-        'version': [0,0,0,0,0x18,0,0,0,0x10,0x8B,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-        'picture': [0,0,0,0,0x18,0,0,0,0x8e,0x80,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-        'buttons': [0,0,0,0,24,0,0,0,0,15,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+        'version':   [0,0,0,0,0x18,0,0,0,0x10,0x8B,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+        ,'picture':  [0,0,0,0,0x18,0,0,0,0x8e,0x80,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+        ,'buttons':  [0,0,0,0,24,0,0,0,0,15,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+
+        ,'zoomin':   [0,0,0,0,0x18,0,0,0,0xE0,0,0,0,0x00,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0] #zoomin
+        ,'zoomout':  [0,0,0,0,0x18,0,0,0,0xE0,0,0,0,0x01,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0] #zoomout
+        ,'autofocus':[0,0,0,0,0x18,0,0,0,0xE1,0,0,0,0x00,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0] #autofocus?
+        ,'brightness_dark': [0,0,0,0,0x18,0,0,0,0xE2,0,0,0,0x03,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+        #,'zoomin': [0,0,0,0,0x18,0,0,0,0xE2,0,0,0,0x04,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+        ,'brightness_light': [0,0,0,0,0x18,0,0,0,0xE2,0,0,0,0x05,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+        #,'zoomin':  [0,0,0,0,0x18,0,0,0,0xEA,0,0,0,0x00,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0] 
+
     }
     last_image = None #Image.open("error.png")
 
@@ -27,10 +36,43 @@ class Elmo:
 
         return self
 
+    def zoom(self,i):
+        if i > 0:
+            self.device.write(self.device[0][(0,0)][1].bEndpointAddress,self.msg['zoomin'],0)
+            ret = self.device.read(self.device[0][(0,0)][0].bEndpointAddress,32)
+        elif i < 0:
+            self.device.write(self.device[0][(0,0)][1].bEndpointAddress,self.msg['zoomout'],0)
+            ret = self.device.read(self.device[0][(0,0)][0].bEndpointAddress,32)
+
+    def brightness(self,i):
+        try:
+            if i > i:
+                self.device.write(self.device[0][(0,0)][1].bEndpointAddress,self.msg['brightness_dark'],0)
+                ret = self.device.read(self.device[0][(0,0)][0].bEndpointAddress,32)
+                return ret
+            elif i < i:
+                self.device.write(self.device[0][(0,0)][1].bEndpointAddress,self.msg['brightness_light'],0)
+                ret = self.device.read(self.device[0][(0,0)][0].bEndpointAddress,32)
+                return ret 
+        except:
+            return False
+
+    
+    def autofocs(self):
+        try:
+            self.device.write(self.device[0][(0,0)][1].bEndpointAddress,self.msg['autofocus'],0) 
+            ret = self.device.read(self.device[0][(0,0)][0].bEndpointAddress,32)
+            return ret
+        except:
+            return False
+
     def version(self):
-        self.device.write(self.device[0][(0,0)][1].bEndpointAddress,self.msg['version'],0)
-        ret = self.device.read(self.device[0][(0,0)][0].bEndpointAddress,32)
-        return ret
+        try:
+            self.device.write(self.device[0][(0,0)][1].bEndpointAddress,self.msg['version'],0)
+            ret = self.device.read(self.device[0][(0,0)][0].bEndpointAddress,32)
+            return ret
+        except:
+            return False
     
     def cleardevice(self):
         '''Clear the devices memory'''
