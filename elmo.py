@@ -15,12 +15,10 @@ class Elmo:
         ,'zoomout':  [0,0,0,0,0x18,0,0,0,0xE0,0,0,0,0x01,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0] #zoomout
         ,'autofocus':[0,0,0,0,0x18,0,0,0,0xE1,0,0,0,0x00,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0] #autofocus?
         ,'brightness_dark': [0,0,0,0,0x18,0,0,0,0xE2,0,0,0,0x03,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
-        #,'zoomin': [0,0,0,0,0x18,0,0,0,0xE2,0,0,0,0x04,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
         ,'brightness_light': [0,0,0,0,0x18,0,0,0,0xE2,0,0,0,0x05,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
-        #,'zoomin':  [0,0,0,0,0x18,0,0,0,0xEA,0,0,0,0x00,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0] 
 
     }
-    last_image = None #Image.open("error.png")
+    last_image = None
 
     def connect(self,vendor=0x09a1,product=0x001d):
         self.device = usb.core.find(idVendor=vendor, idProduct=product)
@@ -100,8 +98,12 @@ class Elmo:
         # which is used to read the whole package
         finished = False                                                            
         error = False
-        answer = []                                                                 
-        while not finished:                                                         
+        answer = []
+        size = 0xfef8
+        
+        # 0xfef8 is the maximum size of a package
+        # if it is smaller => the last package and exit
+        while size == 0xfef8:                                                         
             try:
                 ret = self.device.read(0x83,512)                                               
                 size = 256*ret[5]+ret[4]#-(512-8) # Byte to integer 
@@ -111,18 +113,13 @@ class Elmo:
                 self.cleardevice()
                 error = True
                 return self.last_image
-                break
-            # 0xfef8 is the maximum size of a package
-            # if it is smaller => the last package and exit
-            if not size == 0xfef8:                                                  
-                finished = True                                                     
+                break                                                     
 
         if not error:
             data = ''.join([chr(i) for i in answer])
             try:
                 stream = StringIO.StringIO(data)
                 image = Image.open(stream)
-                #pg_image = pygame.image.fromstring(image.tostring(), image.size, image.mode)
                 self.last_image = image
             except:
                 self.cleardevice()
