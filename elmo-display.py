@@ -144,6 +144,7 @@ def draw_help(screen):
                    Zoom out: Ctrl+V
                    Brightness up: Ctrl+D
                    Brightness down: Ctrl+X
+                   Reset Brightness: Ctrl+G 
                    Autofocus: Ctrl+A
                    Makro: Ctrl+E
                    Wide: Ctrl+W\n\n
@@ -331,7 +332,10 @@ def events():
                     cam.brightness(1)
                 #brightness down
                 if (event.key == pygame.K_x and pygame.K_LCTRL) or (event.key == pygame.K_x and pygame.K_RCTRL):
-                    cam.brightness(-1)
+                    cam.brightness(-1)                
+                #reset brightness
+                if (event.key == pygame.K_g and pygame.K_LCTRL) or (event.key == pygame.K_g and pygame.K_RCTRL):
+                    cam.brightness(0)
                 #autofocus
                 if (event.key == pygame.K_a and pygame.K_LCTRL) or (event.key == pygame.K_a and pygame.K_RCTRL):
                     cam.focus(0)
@@ -383,7 +387,11 @@ while 1:
         #image = Image.open("test.jpg")
         #error_no_elmo=False
         #:test
+
+        #rotate image x-90 degree
+        image = image.rotate(90*(rotate_90%4))
         
+        #make image to a pygame compatible
         image = pygame.image.fromstring(image.tostring(), image.size, image.mode)
         
         error_no_image = False
@@ -407,7 +415,7 @@ while 1:
         if rotate:
             image = pygame.transform.flip(image, True, True)
         #rotate screen for x*90 degree
-        image = pygame.transform.rotate(image, 90*(rotate_90%4))
+        #image = pygame.transform.rotate(image, 90*(rotate_90%4))
         
         #resize image to fit the screen
         if fullscreen == False:
