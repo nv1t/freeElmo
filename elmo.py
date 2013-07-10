@@ -12,20 +12,23 @@ class Elmo:
         ,'picture':  [0,0,0,0,0x18,0,0,0,0x8e,0x80,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
         ,'buttons':  [0,0,0,0,24,0,0,0,0,15,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
 
-        ,'zoomstop':   [0,0,0,0,0x18,0,0,0,0xE0,0,0,0,0x00,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0] #zoomin
-        ,'zoomin':  [0,0,0,0,0x18,0,0,0,0xE0,0,0,0,0x01,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0] #zoomout
-        ,'zoomout': [0,0,0,0,0x18,0,0,0,0xE0,0,0,0,0x02,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+        ,'zoom_stop':   [0,0,0,0,0x18,0,0,0,0xE0,0,0,0,0x00,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0] #zoomin
+        ,'zoom_in':  [0,0,0,0,0x18,0,0,0,0xE0,0,0,0,0x01,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0] #zoomout
+        ,'zoom_out': [0,0,0,0,0x18,0,0,0,0xE0,0,0,0,0x02,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
         ,'autofocus':[0,0,0,0,0x18,0,0,0,0xE1,0,0,0,0x00,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0] #autofocus?
         ,'brightness_stop': [0,0,0,0,0x18,0,0,0,0xE2,0,0,0,0x04,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
         ,'brightness_dark': [0,0,0,0,0x18,0,0,0,0xE2,0,0,0,0x03,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
         ,'brightness_light': [0,0,0,0,0x18,0,0,0,0xE2,0,0,0,0x02,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
         ,'brightness_auto': [0,0,0,0,0x18,0,0,0,0xE2,0,0,0,0x05,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
-        #,'zoomin':  [0,0,0,0,0x18,0,0,0,0xEA,0,0,0,0x00,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0] 
+        ,'focus_near':  [0,0,0,0,0x18,0,0,0,0xEA,0,0,0,0x00,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0] 
+        ,'focus_wide':  [0,0,0,0,0x18,0,0,0,0xEA,0,0,0,0x01,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+        ,'focus_stop':  [0,0,0,0,0x18,0,0,0,0xEA,0,0,0,0x02,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
 
     }
     last_image = None #Image.open("error.png")
-    zomming = False
+    zooming = False
     brightnessing = False
+    focusing = False
 
     def connect(self,vendor=0x09a1,product=0x001d):
         self.device = usb.core.find(idVendor=vendor, idProduct=product)
@@ -43,24 +46,41 @@ class Elmo:
 
     def zoom(self,i):
         if self.zooming:
-            self.device.write(self.device[0][(0,0)][1].bEndpointAddress,self.msg['zoomstop'],0)
+            self.device.write(self.device[0][(0,0)][1].bEndpointAddress,self.msg['zoom_stop'],0)
             ret = self.device.read(self.device[0][(0,0)][0].bEndpointAddress,32)
             self.zooming = False
             return
 
         if i > 0:
             self.zooming = True
-            self.device.write(self.device[0][(0,0)][1].bEndpointAddress,self.msg['zoomin'],0)
+            self.device.write(self.device[0][(0,0)][1].bEndpointAddress,self.msg['zoom_in'],0)
             ret = self.device.read(self.device[0][(0,0)][0].bEndpointAddress,32)
         elif i < 0:
             self.zooming = True
-            self.device.write(self.device[0][(0,0)][1].bEndpointAddress,self.msg['zoomout'],0)
+            self.device.write(self.device[0][(0,0)][1].bEndpointAddress,self.msg['zoom_out'],0)
             ret = self.device.read(self.device[0][(0,0)][0].bEndpointAddress,32)
 
 
     def focus(self,i):
-        if i == 0: 
+        if self.focusing:                                                        
+            self.device.write(self.device[0][(0,0)][1].bEndpointAddress,self.msg['focus_stop'],0)
+            ret = self.device.read(self.device[0][(0,0)][0].bEndpointAddress,32)
+            self.focusing = False                                                
+            return                                                              
+                                                                                
+        if i > 0:                                                               
+            self.focusing = True                                                 
+            self.device.write(self.device[0][(0,0)][1].bEndpointAddress,self.msg['focus_wide'],0)
+            ret = self.device.read(self.device[0][(0,0)][0].bEndpointAddress,32)
+        elif i < 0:                                                             
+            self.focusing = True                                                 
+            self.device.write(self.device[0][(0,0)][1].bEndpointAddress,self.msg['focus_near'],0)
+            ret = self.device.read(self.device[0][(0,0)][0].bEndpointAddress,32)
+        else:
+            self.focusing = True                 
             self.autofocus()
+        
+
 
     def brightness(self,i):
         if self.brightnessing:                                                        
