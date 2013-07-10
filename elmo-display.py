@@ -104,7 +104,7 @@ DGRAY = (48, 48, 48)
 ###############
 # global vars #
 ###############
-version = "0.5.7"
+version = "0.6.0"
 info = pygame.display.Info()
 fullscreen = False
 rotate = False
@@ -140,14 +140,14 @@ def draw_help(screen):
                    Rotate Image 90 Degree: Ctrl+R\n
                    Save Image: Ctrl+S\n
                    Camera options:\n
-                   Zoom in: Ctrl+C
-                   Zoom out: Ctrl+V
-                   Brightness up: Ctrl+D
-                   Brightness down: Ctrl+X
+                   Zoom in start/stop: Ctrl+C
+                   Zoom out start/stop: Ctrl+V
+                   Brightness up start/stop: Ctrl+D
+                   Brightness down start/stop: Ctrl+X
                    Reset Brightness: Ctrl+G 
                    Autofocus: Ctrl+A
-                   Makro: Ctrl+E
-                   Wide: Ctrl+W\n\n
+                   Makrofocus start/stop: Ctrl+E
+                   Widefocus start/stop: Ctrl+W\n\n
                    Free ELMO - Version """+version+"""
                    (c)2013 nuit & McSumo"""
     #create rectangle
