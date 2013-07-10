@@ -3,6 +3,7 @@ import usb.util
 from PIL import Image
 import cStringIO as StringIO                                                    
 import sys
+import time
 
 class Elmo:
     device = None
@@ -11,16 +12,18 @@ class Elmo:
         ,'picture':  [0,0,0,0,0x18,0,0,0,0x8e,0x80,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
         ,'buttons':  [0,0,0,0,24,0,0,0,0,15,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
 
-        ,'zoomin':   [0,0,0,0,0x18,0,0,0,0xE0,0,0,0,0x00,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0] #zoomin
-        ,'zoomout':  [0,0,0,0,0x18,0,0,0,0xE0,0,0,0,0x01,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0] #zoomout
+        ,'zoomstop':   [0,0,0,0,0x18,0,0,0,0xE0,0,0,0,0x00,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0] #zoomin
+        ,'zoomin':  [0,0,0,0,0x18,0,0,0,0xE0,0,0,0,0x01,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0] #zoomout
+        ,'zoomout': [0,0,0,0,0x18,0,0,0,0xE0,0,0,0,0x02,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
         ,'autofocus':[0,0,0,0,0x18,0,0,0,0xE1,0,0,0,0x00,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0] #autofocus?
-        ,'brightness_dark': [0,0,0,0,0x18,0,0,0,0xE2,0,0,0,0x03,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
-        #,'zoomin': [0,0,0,0,0x18,0,0,0,0xE2,0,0,0,0x04,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
-        ,'brightness_light': [0,0,0,0,0x18,0,0,0,0xE2,0,0,0,0x05,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+        ,'brightness_auto': [0,0,0,0,0x18,0,0,0,0xE2,0,0,0,0x03,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+        ,'brightness_light': [0,0,0,0,0x18,0,0,0,0xE2,0,0,0,0x04,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+        ,'brightness_dark': [0,0,0,0,0x18,0,0,0,0xE2,0,0,0,0x05,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
         #,'zoomin':  [0,0,0,0,0x18,0,0,0,0xEA,0,0,0,0x00,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0] 
 
     }
     last_image = None #Image.open("error.png")
+    zooming = False
 
     def connect(self,vendor=0x09a1,product=0x001d):
         self.device = usb.core.find(idVendor=vendor, idProduct=product)
@@ -37,12 +40,21 @@ class Elmo:
         return self
 
     def zoom(self,i):
+        if self.zooming:
+            self.device.write(self.device[0][(0,0)][1].bEndpointAddress,self.msg['zoomstop'],0)
+            ret = self.device.read(self.device[0][(0,0)][0].bEndpointAddress,32)
+            self.zooming = False
+            return
+
         if i > 0:
+            self.zooming = True
             self.device.write(self.device[0][(0,0)][1].bEndpointAddress,self.msg['zoomin'],0)
             ret = self.device.read(self.device[0][(0,0)][0].bEndpointAddress,32)
         elif i < 0:
+            self.zooming = True
             self.device.write(self.device[0][(0,0)][1].bEndpointAddress,self.msg['zoomout'],0)
             ret = self.device.read(self.device[0][(0,0)][0].bEndpointAddress,32)
+
 
     def focus(self,i):
         if i == 0: 
@@ -50,14 +62,18 @@ class Elmo:
 
     def brightness(self,i):
         try:
-            if i > i:
-                self.device.write(self.device[0][(0,0)][1].bEndpointAddress,self.msg['brightness_dark'],0)
-                ret = self.device.read(self.device[0][(0,0)][0].bEndpointAddress,32)
-                return ret
-            elif i < i:
+            if i > 0:
                 self.device.write(self.device[0][(0,0)][1].bEndpointAddress,self.msg['brightness_light'],0)
                 ret = self.device.read(self.device[0][(0,0)][0].bEndpointAddress,32)
+                return ret
+            elif i < 0:
+                self.device.write(self.device[0][(0,0)][1].bEndpointAddress,self.msg['brightness_dark'],0)
+                ret = self.device.read(self.device[0][(0,0)][0].bEndpointAddress,32)
                 return ret 
+            else:
+                self.device.write(self.device[0][(0,0)][1].bEndpointAddress,self.msg['brightness_auto'],0)
+                ret = self.device.read(self.device[0][(0,0)][0].bEndpointAddress,32)
+                return ret
         except:
             return False
 
