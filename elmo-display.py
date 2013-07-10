@@ -389,7 +389,7 @@ while 1:
         #:test
 
         #rotate image x-90 degree
-        image = image.rotate(90*(rotate_90%4))
+        #image = image.rotate(90*(rotate_90%4))
         
         #make image to a pygame compatible
         image = pygame.image.fromstring(image.tostring(), image.size, image.mode)
