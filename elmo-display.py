@@ -114,6 +114,7 @@ display_help = False
 display_interface = False
 image_res = None
 image_size = None
+image = None
 screen_res = None
 screen = None
 cam_connect = -1
@@ -136,8 +137,9 @@ def draw_help(screen):
                    Display Help: Ctrl+H, F1  
                    Exit Help: Ctrl+H, F1, Escape\n
                    Toggle Fullscreen: Ctrl+F
-                   Rotate Image 180 Degree: Ctrl+T
-                   Rotate Image 90 Degree: Ctrl+R\n
+                   Rotate Image 180 Degree: Ctrl+T"""
+                   #Rotate Image 90 Degree: Ctrl+R\n
+    my_string += """\n
                    Save Image: Ctrl+S\n
                    Camera options:\n
                    Zoom in start/stop: Ctrl+C
@@ -161,20 +163,12 @@ def draw_help(screen):
         screen.blit(rendered_text, textRect)
 
 #toggle the fullscreen state
-def toggle_fullscreen():
-    global info
-    global screen
-    global image
-    global fullscreen
-    global image_res
-    #info = pygame.display.Info()
+def toggle_fullscreen(image, screen, fullscreen, image_res):
     if fullscreen:
-        #screen = pygame.display.set_mode((info.current_w,info.current_h), RESIZABLE)
         screen = pygame.display.set_mode(screen_res, RESIZABLE)
         fullscreen = False 
     else:
         try:
-            #screen = pygame.display.set_mode((info.current_w,info.current_h), FULLSCREEN)
             screen = pygame.display.set_mode(image_res, FULLSCREEN)
             fullscreen = True
         except:
@@ -205,7 +199,7 @@ def get_image_format(image):
         
 #resize image
 def resize_image(image, screen):
-    #calculate actual sizes
+    #calculate actual sizes 
     format = get_image_format(image)
     screen_size = screen.get_size()
     image_size = image.get_size()
@@ -242,8 +236,7 @@ def save_screen(screen):
     pygame.image.save(screen, "ELMO-Screenshots" + dir_sep + datetime.datetime.now().strftime("%Y%m%d_%H%M%S") + ".png")
 
 #reduce source to display resolution
-def reduce_to_screen_size(image):
-    global info
+def reduce_to_screen_size(image, info):
     image_size = image.get_size()
     #compare sizes an get a little extra space for taskbars to fit the image
     if image_size[0] > info.current_w:
@@ -289,7 +282,8 @@ def events():
             size = event.size
             screen = pygame.display.set_mode(size,RESIZABLE)
             try:
-                image_size = resize_image(image, screen)
+                if image != None:
+                    image_size = resize_image(image, screen)
             except NameError:
                 pass                
         #close program
@@ -302,7 +296,7 @@ def events():
                 sys.exit()    
             #toggle fullscreen
             if (event.key == pygame.K_f and pygame.K_LCTRL) or (event.key == pygame.K_f and pygame.K_RCTRL):
-                toggle_fullscreen()
+                toggle_fullscreen(image, screen, fullscreen, image_res)
             #rotate display
             if (event.key == pygame.K_t and pygame.K_LCTRL) or (event.key == pygame.K_t and pygame.K_RCTRL):
                 rotate = not rotate
@@ -345,7 +339,7 @@ def events():
                 #wide focus
                 if (event.key == pygame.K_w and pygame.K_LCTRL) or (event.key == pygame.K_w and pygame.K_RCTRL):
                     cam.focus(1)
-                
+
 #################
 # main-function #
 #################
@@ -355,10 +349,6 @@ while 1:
     #################################
     if error_no_elmo == True:
         try:    
-            #camera module for testing
-            #pygame.camera.init()
-            #cam = pygame.camera.Camera(0)
-            #cam.start() 
             cam = elmo.Elmo()
             cam_connect = cam.connect()
             error_no_elmo = True if cam_connect == -1 else False
@@ -381,31 +371,31 @@ while 1:
         pass
     try: 
         #get the image        
-        image = cam.get_image()
-        
-        #test:
-        #image = Image.open("test.jpg")
-        #error_no_elmo=False
-        #:test
+        image_new = cam.get_image()
 
         #rotate image x-90 degree
-        #image = image.rotate(90*(rotate_90%4))
+        #long calculation phases for the pictures, deactivated at the moment
+        #image_new = image_new.rotate(90*(rotate_90%4))
         
         #make image to a pygame compatible
-        image = pygame.image.fromstring(image.tostring(), image.size, image.mode)
-        
+        image_new = pygame.image.fromstring(image_new.tostring(), image_new.size, image_new.mode)
+
         error_no_image = False
     except:
         #ELMO-Device wont deliver a image
         error_no_image = True
-    
-    if not error_no_image:
+  
+    #if new image update the image, else the old image will be displayed.
+    if error_no_image == False:
+        image = image_new
+
+    if image != None:
         #save of the image resolution
         image_res = image.get_size()
 
         #init display on startup if not set
         if screen is None:
-            start_size = reduce_to_screen_size(image)
+            start_size = reduce_to_screen_size(image, info)
             screen = pygame.display.set_mode(start_size,RESIZABLE)
             pygame.display.set_caption(str("Free ELMO Version " + version)) #set msg of the window
             screen_res = screen.get_size()
@@ -414,8 +404,6 @@ while 1:
         #rotate screen if demanded
         if rotate:
             image = pygame.transform.flip(image, True, True)
-        #rotate screen for x*90 degree
-        #image = pygame.transform.rotate(image, 90*(rotate_90%4))
         
         #resize image to fit the screen
         if fullscreen == False:
@@ -430,9 +418,16 @@ while 1:
         #display help when ctrl+h, for close ctrl+h or esc must be pressed
         #must be after screen.blit(image...
         if display_help:
-            draw_help(screen)
-        
-    if error_no_elmo or error_no_image:
+            draw_help(screen) 
+        #display error massage when no image is delivered
+        if error_no_image:
+            string = "\n   Can't get a new image.\n"
+            textRect = pygame.Rect((10, 10, 200, 50))
+            rendered_text = render_textrect(string, basicFont, textRect, LGRAY, DGRAY, 0)
+            if rendered_text:
+                screen.blit(rendered_text, textRect)        
+    
+    if error_no_elmo == True or image == None:
         if screen_res == None:
             screen_res = [400, 300]
         screen = pygame.display.set_mode(screen_res,RESIZABLE)
