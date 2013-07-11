@@ -1,9 +1,5 @@
 import usb.core
 import usb.util
-from PIL import Image
-import cStringIO as StringIO                                                    
-import sys
-import time
 
 class Elmo:
     def __init__(self):
@@ -133,11 +129,4 @@ class Elmo:
                 self.cleardevice()
                 return False
 
-        data = ''.join([chr(i) for i in answer])
-        try:
-            stream = StringIO.StringIO(data)
-            image = Image.open(stream)
-
-            return image
-        except:
-            self.cleardevice()
+        return ''.join([chr(i) for i in answer])

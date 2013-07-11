@@ -2,6 +2,7 @@ import pygame, sys, datetime, os
 import pygame.camera
 from pygame.locals import *
 from PIL import Image
+import cStringIO as StringIO
 import elmo
 
 pygame.init() #init pygame
@@ -371,13 +372,16 @@ while 1:
         pass
     try: 
         #get the image        
-        image_new = cam.get_image()
+        data = cam.get_image()
 
         #rotate image x-90 degree
         #long calculation phases for the pictures, deactivated at the moment
         #image_new = image_new.rotate(90*(rotate_90%4))
         
+        
         #make image to a pygame compatible
+        stream = StringIO.StringIO(data)                                    
+        image_new = Image.open(stream)
         image_new = pygame.image.fromstring(image_new.tostring(), image_new.size, image_new.mode)
 
         error_no_image = False
