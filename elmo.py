@@ -26,7 +26,6 @@ class Elmo:
             ,'focus_stop':  [0,0,0,0,0x18,0,0,0,0xEA,0,0,0,0x02,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
 
         }
-        self.last_image = None
         self.zooming = False
         self.brightnessing = False
         self.focusing = False
@@ -116,11 +115,10 @@ class Elmo:
             tmp = self.device.read(0x83,32)
         except:
             self.cleardevice()
-            return self.last_image
+            return False
 
         # Every package has a defined length in byte 4/5 of the first 8 Bytes
         # which is used to read the whole package
-        error = False
         answer = []  
 
         # 0xfef8 is the maximum size of a package                           
@@ -133,18 +131,13 @@ class Elmo:
                 answer += ret[8:]+self.device.read(0x83,size)                                        
             except:
                 self.cleardevice()
-                error = True
-                return self.last_image
+                return False
 
-        if not error:
-            data = ''.join([chr(i) for i in answer])
-            try:
-                stream = StringIO.StringIO(data)
-                image = Image.open(stream)
+        data = ''.join([chr(i) for i in answer])
+        try:
+            stream = StringIO.StringIO(data)
+            image = Image.open(stream)
 
-                self.last_image = image
-            except:
-                self.cleardevice()
-            return self.last_image
-        else:
-            return False
+            return image
+        except:
+            self.cleardevice()
