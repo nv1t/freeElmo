@@ -95,6 +95,7 @@ class Elmo:
     def version(self):
         self.device.write(0x02,self.msg['version'],0)
         ret = self.device.read(0x81,32)
+        return ret
     
     def cleardevice(self):
         '''Clear the devices memory on endpoint 0x83'''
