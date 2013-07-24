@@ -14,9 +14,7 @@ pygame.init() #init pygame
 ########################
 #fonts:
 basic_font = ""
-basic_font_size = 100
-help_font_size = 100
-buttons_font_size = 100
+basic_font_size = 24
 #colors:
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
@@ -29,14 +27,14 @@ DGRAY = (48, 48, 48)
 ###############
 # global vars #
 ###############
-version = "0.6.5"
+version = "0.6.7"
 info = pygame.display.Info()
 fullscreen = False
 rotate = False
 rotate_90 = 0
 rotate_90_changed = False
 display_help = False
-display_interface = False
+display_interface = True
 image_res = None
 image_size = None
 image = None
@@ -51,7 +49,7 @@ buttons = {}
 # functions #
 #############
 #draw help-window with commands on the screen 
-def draw_help(screen, screen_size, version, font, font_size, color_background, color_font):
+def draw_help(screen, screen_size, version, font, color_background, color_font):
     #define string to display 
     my_string = """\n
                 Help\n
@@ -76,10 +74,11 @@ def draw_help(screen, screen_size, version, font, font_size, color_background, c
                 Free ELMO - Version """+version+"""
                 (c)2013 nuit & McSumo"""
     #define resolution of the rectangle
-    height = screen_size[1] - 100
+    height = screen_size[1] * 0.9
     if height < 200:
         height = 200
     width= (height/5)*4
+    font_size = int((height/12)/2)
     #create rectangle
     textRect = pygame.Rect((0, 0, width, height))
     #set rectangle position to middle of the screen
@@ -97,10 +96,10 @@ def draw_help(screen, screen_size, version, font, font_size, color_background, c
                 fits = True
     if rendered_text:
         screen.blit(rendered_text, textRect)
-    return [screen, font_size]
+    return screen
         
 #draw a interface with buttons on the screen        
-def draw_interface(screen, screen_size, buttons, error_no_elmo, font, font_size, color_background, color_font, bold=False):
+def draw_interface(screen, screen_size, buttons, error_no_elmo, font, color_background, color_font, bold=False):
     #the screen will be split in a relative size for the adjustable buttons size
     #it will be the same a in help a minimum resolution of 200x200 pixels is standard
     #calculate relative size of tides for the screen
@@ -114,37 +113,39 @@ def draw_interface(screen, screen_size, buttons, error_no_elmo, font, font_size,
     #Create buttons Array
     buttons = {}
     #Parameters for Buttons: surface, color, x, y, length, height, width, text, text_color, font, font_size, bold
+    #buttons right side
     buttons["exit"] = Button()
-    buttons["exit"].create_button(screen, color_background, 0, 0*button_height, button_width, button_height, 0, "Exit", color_font, font, font_size, bold)
+    buttons["exit"].create_button(screen, color_background, screen_size[0]-button_width, 0*button_height, button_width, button_height, 0, "Exit", color_font, font, font_size, bold)
     buttons["help"] = Button()
-    buttons["help"].create_button(screen, color_background, 0, 2*button_height, button_width, button_height, 0, "Help", color_font, font, font_size, bold)
+    buttons["help"].create_button(screen, color_background, screen_size[0]-button_width, 2*button_height, button_width, button_height, 0, "Help", color_font, font, font_size, bold)
     buttons["interface"] = Button()
-    buttons["interface"].create_button(screen, color_background, 0, 4*button_height, button_width, button_height, 0, "Interface Off", color_font, font, font_size, bold)
+    buttons["interface"].create_button(screen, color_background, screen_size[0]-button_width, 4*button_height, button_width, button_height, 0, "Interface Off", color_font, font, font_size, bold)
     buttons["fullscreen"] = Button()
-    buttons["fullscreen"].create_button(screen, color_background, 0, 6*button_height, button_width, button_height, 0, "Fullscreen", color_font, font, font_size, bold)
+    buttons["fullscreen"].create_button(screen, color_background, screen_size[0]-button_width, 6*button_height, button_width, button_height, 0, "Fullscreen", color_font, font, font_size, bold)
+    #buttons left side
     buttons["rotate"] = Button()
-    buttons["rotate"].create_button(screen, color_background, 0, 8*button_height, button_width, button_height, 0, "Rotate Image", color_font, font, font_size, bold)
+    buttons["rotate"].create_button(screen, color_background, 0, 0*button_height, button_width, button_height, 0, "Rotate Image", color_font, font, font_size, bold)
     buttons["save"] = Button()
-    buttons["save"].create_button(screen, color_background, 0, 10*button_height, button_width, button_height, 0, "Save Image", color_font, font, font_size, bold)
+    buttons["save"].create_button(screen, color_background, 0, 2*button_height, button_width, button_height, 0, "Save Image", color_font, font, font_size, bold)
     #Deactivation of elmo-systems-commands if the elmo-device is not connected
     if error_no_elmo == False:
         buttons["zoom_in"] = Button()
-        buttons["zoom_in"].create_button(screen, color_background, 0, 12*button_height, button_width, button_height, 0, "Zoom In", color_font, font, font_size, bold)
+        buttons["zoom_in"].create_button(screen, color_background, 0, 4*button_height, button_width, button_height, 0, "Zoom In", color_font, font, font_size, bold)
         buttons["zoom_out"] = Button()
-        buttons["zoom_out"].create_button(screen, color_background, 0, 14*button_height, button_width, button_height, 0, "Zoom Out", color_font, font, font_size, bold)
+        buttons["zoom_out"].create_button(screen, color_background, 0, 6*button_height, button_width, button_height, 0, "Zoom Out", color_font, font, font_size, bold)
         buttons["brightness_reset"] = Button()
-        buttons["brightness_reset"].create_button(screen, color_background, 0, 16*button_height, button_width, button_height, 0, "Reset Brightness", color_font, font, font_size, bold)
+        buttons["brightness_reset"].create_button(screen, color_background, 0, 8*button_height, button_width, button_height, 0, "Reset Brightness", color_font, font, font_size, bold)
         buttons["brightness_up"] = Button()
-        buttons["brightness_up"].create_button(screen, color_background, 0, 18*button_height, button_width, button_height, 0, "Brightness Up", color_font, font, font_size, bold)
+        buttons["brightness_up"].create_button(screen, color_background, 0, 10*button_height, button_width, button_height, 0, "Brightness Up", color_font, font, font_size, bold)
         buttons["brightness_down"] = Button()
-        buttons["brightness_down"].create_button(screen, color_background, 0, 20*button_height, button_width, button_height, 0, "Brightness Down", color_font, font, font_size, bold)
+        buttons["brightness_down"].create_button(screen, color_background, 0, 12*button_height, button_width, button_height, 0, "Brightness Down", color_font, font, font_size, bold)
         buttons["focus_auto"] = Button()
-        buttons["focus_auto"].create_button(screen, color_background, 0, 22*button_height, button_width, button_height, 0, "Autofocus", color_font, font, font_size, bold)
+        buttons["focus_auto"].create_button(screen, color_background, 0, 14*button_height, button_width, button_height, 0, "Autofocus", color_font, font, font_size, bold)
         buttons["focus_macro"] = Button()
-        buttons["focus_macro"].create_button(screen, color_background, 0, 24*button_height, button_width, button_height, 0, "Macrofocus", color_font, font, font_size, bold)
+        buttons["focus_macro"].create_button(screen, color_background, 0, 16*button_height, button_width, button_height, 0, "Macrofocus", color_font, font, font_size, bold)
         buttons["focus_wide"] = Button()
-        buttons["focus_wide"].create_button(screen, color_background, 0, 26*button_height, button_width, button_height, 0, "Widefocus", color_font, font, font_size, bold)
-    return [buttons, font_size]
+        buttons["focus_wide"].create_button(screen, color_background, 0, 18*button_height, button_width, button_height, 0, "Widefocus", color_font, font, font_size, bold)
+    return buttons
 
 #toggle the fullscreen state
 def toggle_fullscreen(image, screen, fullscreen, image_res):
@@ -262,17 +263,11 @@ def events():
     global display_interface
     global image_size
     global buttons
-    global basic_font_size
-    global help_font_size
-    global buttons_font_size
     #button-pressed event-handling
     for event in pygame.event.get():
         #window resize event
         if event.type == pygame.VIDEORESIZE and fullscreen == False and error_no_elmo == False:
             size = event.size
-            help_font_size = 100
-            basic_font_size = 100
-            buttons_font_size = 100
             screen = pygame.display.set_mode(size,RESIZABLE)
             try:
                 if image != None:
@@ -410,7 +405,7 @@ while 1:
         image_new = Image.open(stream)
         
         #test:
-        #image_new = Image.open("test3.jpg")
+        #image_new = Image.open("test.jpg")
         #error_no_elmo = False
         #:test
 
@@ -459,14 +454,10 @@ while 1:
         #display help when ctrl+h, for close ctrl+h or esc must be pressed
         #must be after screen.blit(image...
         if display_help:
-            help_returns = draw_help(screen, screen_res, version, basic_font, help_font_size, DGRAY, LGRAY) 
-            screen = help_returns[0]
-            help_font_size = help_returns[1]
+            screen = draw_help(screen, screen.get_size(), version, basic_font, DGRAY, LGRAY) 
         #display button-interface and return the buttons for event handling
         if display_interface:
-            interface_returns = draw_interface(screen, screen_res, buttons, error_no_elmo, basic_font, buttons_font_size, DGRAY, LGRAY)
-            buttons = interface_returns[0]
-            buttons_font_size = interface_returns[1]
+            buttons = draw_interface(screen, screen.get_size(), buttons, error_no_elmo, basic_font, DGRAY, LGRAY)
         #display error massage when no image is delivered
         if error_no_image:
             string = "\n   Can't get a new image.\n"
