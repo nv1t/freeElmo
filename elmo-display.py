@@ -1,4 +1,4 @@
-import pygame, sys, datetime, os
+import pygame, sys, datetime, time, os
 from pygame.locals import *
 from PIL import Image
 import cStringIO as StringIO
@@ -70,15 +70,15 @@ def draw_help(screen, screen_size, version, font, color_background, color_font):
                 Brightness down start/stop: Ctrl+X\n
                 Autofocus: Ctrl+A
                 Macrofocus start/stop: Ctrl+E
-                Widefocus start/stop: Ctrl+W\n\n
+                Widefocus start/stop: Ctrl+W\n
+                Image Quality UP: Crtl+U
+                Image Quality Down: Crtl+Z\n\n
                 Free ELMO - Version """+version+"""
                 (c)2013 nuit & McSumo"""
     #define resolution of the rectangle
     height = screen_size[1] * 0.9
-    if height < 200:
-        height = 200
     width= (height/5)*4
-    font_size = int((height/12)/2)
+    font_size = int((height/13)/2)
     #create rectangle
     textRect = pygame.Rect((0, 0, width, height))
     #set rectangle position to middle of the screen
@@ -103,48 +103,67 @@ def draw_interface(screen, screen_size, buttons, error_no_elmo, font, color_back
     #the screen will be split in a relative size for the adjustable buttons size
     #it will be the same a in help a minimum resolution of 200x200 pixels is standard
     #calculate relative size of tides for the screen
-    if screen_size[1] > 200:
-        screen_height = screen_size[1]
-    else:
-        screen_height = 200
+    screen_height = screen_size[1]
     font_size = (screen_height/20)/2
-    button_width = 6 * font_size
-    button_height = 1 * font_size
+    button_width = 7 * font_size
+    button_height = 1.2 * font_size
     #Create buttons Array
     buttons = {}
     #Parameters for Buttons: surface, color, x, y, length, height, width, text, text_color, font, font_size, bold
     #buttons right side
+    counter = 0
     buttons["exit"] = Button()
-    buttons["exit"].create_button(screen, color_background, screen_size[0]-button_width, 0*button_height, button_width, button_height, 0, "Exit", color_font, font, font_size, bold)
+    buttons["exit"].create_button(screen, color_background, screen_size[0]-button_width, counter*button_height, button_width, button_height, 0, "Exit", color_font, font, font_size, bold)
+    counter += 2
     buttons["help"] = Button()
-    buttons["help"].create_button(screen, color_background, screen_size[0]-button_width, 2*button_height, button_width, button_height, 0, "Help", color_font, font, font_size, bold)
+    buttons["help"].create_button(screen, color_background, screen_size[0]-button_width, counter*button_height, button_width, button_height, 0, "Help", color_font, font, font_size, bold)
+    counter += 2
     buttons["interface"] = Button()
-    buttons["interface"].create_button(screen, color_background, screen_size[0]-button_width, 4*button_height, button_width, button_height, 0, "Interface Off", color_font, font, font_size, bold)
+    buttons["interface"].create_button(screen, color_background, screen_size[0]-button_width, counter*button_height, button_width, button_height, 0, "Interface Off", color_font, font, font_size, bold)
+    counter += 2
     buttons["fullscreen"] = Button()
-    buttons["fullscreen"].create_button(screen, color_background, screen_size[0]-button_width, 6*button_height, button_width, button_height, 0, "Fullscreen", color_font, font, font_size, bold)
+    buttons["fullscreen"].create_button(screen, color_background, screen_size[0]-button_width, counter*button_height, button_width, button_height, 0, "Fullscreen", color_font, font, font_size, bold)
+    counter += 2
     #buttons left side
+    counter = 0
     buttons["rotate"] = Button()
-    buttons["rotate"].create_button(screen, color_background, 0, 0*button_height, button_width, button_height, 0, "Rotate Image", color_font, font, font_size, bold)
+    buttons["rotate"].create_button(screen, color_background, 0, counter*button_height, button_width, button_height, 0, "Rotate Image", color_font, font, font_size, bold)
+    counter += 2
     buttons["save"] = Button()
-    buttons["save"].create_button(screen, color_background, 0, 2*button_height, button_width, button_height, 0, "Save Image", color_font, font, font_size, bold)
+    buttons["save"].create_button(screen, color_background, 0, counter*button_height, button_width, button_height, 0, "Save Image", color_font, font, font_size, bold)
+    counter += 2
     #Deactivation of elmo-systems-commands if the elmo-device is not connected
     if error_no_elmo == False:
         buttons["zoom_in"] = Button()
-        buttons["zoom_in"].create_button(screen, color_background, 0, 4*button_height, button_width, button_height, 0, "Zoom In", color_font, font, font_size, bold)
+        buttons["zoom_in"].create_button(screen, color_background, 0, counter*button_height, button_width, button_height, 0, "Zoom In", color_font, font, font_size, bold)
+        counter += 2
         buttons["zoom_out"] = Button()
-        buttons["zoom_out"].create_button(screen, color_background, 0, 6*button_height, button_width, button_height, 0, "Zoom Out", color_font, font, font_size, bold)
+        buttons["zoom_out"].create_button(screen, color_background, 0, counter*button_height, button_width, button_height, 0, "Zoom Out", color_font, font, font_size, bold)
+        counter += 2
         buttons["brightness_reset"] = Button()
-        buttons["brightness_reset"].create_button(screen, color_background, 0, 8*button_height, button_width, button_height, 0, "Reset Brightness", color_font, font, font_size, bold)
+        buttons["brightness_reset"].create_button(screen, color_background, 0, counter*button_height, button_width, button_height, 0, "Reset Brightness", color_font, font, font_size, bold)
+        counter += 2
         buttons["brightness_up"] = Button()
-        buttons["brightness_up"].create_button(screen, color_background, 0, 10*button_height, button_width, button_height, 0, "Brightness Up", color_font, font, font_size, bold)
+        buttons["brightness_up"].create_button(screen, color_background, 0, counter*button_height, button_width, button_height, 0, "Brightness Up", color_font, font, font_size, bold)
+        counter += 2
         buttons["brightness_down"] = Button()
-        buttons["brightness_down"].create_button(screen, color_background, 0, 12*button_height, button_width, button_height, 0, "Brightness Down", color_font, font, font_size, bold)
+        buttons["brightness_down"].create_button(screen, color_background, 0, counter*button_height, button_width, button_height, 0, "Brightness Down", color_font, font, font_size, bold)
+        counter += 2
         buttons["focus_auto"] = Button()
-        buttons["focus_auto"].create_button(screen, color_background, 0, 14*button_height, button_width, button_height, 0, "Autofocus", color_font, font, font_size, bold)
+        buttons["focus_auto"].create_button(screen, color_background, 0, counter*button_height, button_width, button_height, 0, "Autofocus", color_font, font, font_size, bold)
+        counter += 2
         buttons["focus_macro"] = Button()
-        buttons["focus_macro"].create_button(screen, color_background, 0, 16*button_height, button_width, button_height, 0, "Macrofocus", color_font, font, font_size, bold)
+        buttons["focus_macro"].create_button(screen, color_background, 0, counter*button_height, button_width, button_height, 0, "Macrofocus", color_font, font, font_size, bold)
+        counter += 2
         buttons["focus_wide"] = Button()
-        buttons["focus_wide"].create_button(screen, color_background, 0, 18*button_height, button_width, button_height, 0, "Widefocus", color_font, font, font_size, bold)
+        buttons["focus_wide"].create_button(screen, color_background, 0, counter*button_height, button_width, button_height, 0, "Widefocus", color_font, font, font_size, bold)
+        counter += 2
+        buttons["quality_up"] = Button()
+        buttons["quality_up"].create_button(screen, color_background, 0, counter*button_height, button_width, button_height, 0, "Image Quality Up", color_font, font, font_size, bold)
+        counter += 2
+        buttons["quality_down"] = Button()
+        buttons["quality_down"].create_button(screen, color_background, 0, counter*button_height, button_width, button_height, 0, "Image Quality Down", color_font, font, font_size, bold)
+        counter += 2
     return buttons
 
 #toggle the fullscreen state
@@ -157,14 +176,29 @@ def toggle_fullscreen(image, screen, fullscreen, image_res):
             screen = pygame.display.set_mode(image_res, FULLSCREEN)
             fullscreen = True
         except:
-            string = "\n   Can't change to fullscreen.\n   No video mode isn't large enough for the image resolution.\n"
-            textRect = pygame.Rect((10, 10, 500, 65))
-            rendered_text = render_textrect(string, pygame.font.SysFont("", 24), textRect, LGRAY, DGRAY, 0)
+            string = "\n   Can't change to fullscreen.\n   No video mode isn't large enough for the image resolution.   "
+            #calculating the box size
+            temp_font_size = int((screen.get_size()[0]/12)/2)
+            temp_width = temp_font_size * 7
+            temp_height = temp_font_size * 0.9
+            #print the boy on the screen
+            fits=False
+            rendered_text = False
+            while not fits:
+                try:            
+                    textRect = pygame.Rect((0, 0, temp_width, temp_height))
+                    textRect.centerx = screen.get_rect().centerx
+                    rendered_text = render_textrect(string, pygame.font.SysFont("", temp_font_size), textRect, LGRAY, DGRAY, 0)
+                    fits = True
+                except:
+                    temp_font_size = temp_font_size - 1
+                    if temp_font_size == 0: fits = True            
             if rendered_text:
-                screen.blit(rendered_text, textRect)        
+                screen.blit(rendered_text, textRect)    
             pygame.display.update()
+            time.sleep(2)
             fullscreen = False
-    return [screen, fullscreen]
+    return [screen, fullscreen]  
 
 #get image format
 def get_image_format(image):
@@ -213,7 +247,7 @@ def get_image_padding(image, screen):
     y = (screen_size[1]-image_size[1])/2
     return [x, y]
 
-#save screen from actual image
+#save screen from actual pygame screen
 def save_screen(screen):
     is_windows = sys.platform.startswith('win')
     if is_windows:
@@ -224,6 +258,26 @@ def save_screen(screen):
     if not os.path.exists(directory):
         os.makedirs(directory)
     pygame.image.save(screen, "ELMO-Screenshots" + dir_sep + datetime.datetime.now().strftime("%Y%m%d_%H%M%S") + ".png")
+def save_cam(cam):
+    if cam.connect() != -1:
+        is_windows = sys.platform.startswith('win')
+        if is_windows:
+            dir_sep = "\\"
+        else:
+            dir_sep = "/"
+        directory = "ELMO-Screenshots"
+        if not os.path.exists(directory):
+            os.makedirs(directory)  
+        #get the image     
+        data = cam.get_image()
+        compression = cam.getCompression()
+        cam.setCompression(100)
+        #make image to a pygame compatible
+        stream = StringIO.StringIO(data)                                    
+        image = Image.open(stream)
+        image = pygame.image.fromstring(image_new.tostring(), image_new.size, image_new.mode)
+        pygame.image.save(image, "ELMO-Screenshots" + dir_sep + datetime.datetime.now().strftime("%Y%m%d_%H%M%S") + ".png")
+        cam.setCompression(compression)
 
 #reduce source to display resolution
 def reduce_to_screen_size(image, info):
@@ -268,7 +322,11 @@ def events():
         #window resize event
         if event.type == pygame.VIDEORESIZE and fullscreen == False and error_no_elmo == False:
             size = event.size
-            screen = pygame.display.set_mode(size,RESIZABLE)
+            temp_width = size[0]
+            temp_height = size[1]
+            if temp_width < 480: temp_width = 480
+            if temp_height < 320: temp_height = 320
+            screen = pygame.display.set_mode((temp_width, temp_height),RESIZABLE)
             try:
                 if image != None:
                     image_size = resize_image(image, screen)
@@ -302,7 +360,8 @@ def events():
                 display_interface = not display_interface
             #make screenshot
             if (event.key == pygame.K_s and pygame.K_LCTRL) or (event.key == pygame.K_s and pygame.K_RCTRL):
-                save_screen(image)
+                #save_screen(image)
+                save_cam(cam)
             #exit help with escape
             if event.key == pygame.K_ESCAPE and display_help == True:
                 display_help = False
@@ -332,6 +391,12 @@ def events():
                 #wide focus
                 if (event.key == pygame.K_w and pygame.K_LCTRL) or (event.key == pygame.K_w and pygame.K_RCTRL):
                     cam.focus(1)
+                #quality up
+                if (event.key == pygame.K_u and pygame.K_LCTRL) or (event.key == pygame.K_u and pygame.K_RCTRL):
+                    cam.setCompression(5, False)
+                #quality down
+                if (event.key == pygame.K_z and pygame.K_LCTRL) or (event.key == pygame.K_z and pygame.K_RCTRL):
+                    cam.setCompression(-5, False)
         #Button handling
         elif event.type == MOUSEBUTTONDOWN:
             if buttons['exit'].pressed(pygame.mouse.get_pos()):
@@ -347,7 +412,8 @@ def events():
             if buttons['rotate'].pressed(pygame.mouse.get_pos()):
                 rotate = not rotate
             if buttons['save'].pressed(pygame.mouse.get_pos()):
-                save_screen(image)
+                #save_screen(image)
+                save_cam(cam)
             #ELMO-Functions like zoom, brightness, focus
             if error_no_elmo == False:
                 if buttons['zoom_in'].pressed(pygame.mouse.get_pos()):
@@ -366,6 +432,10 @@ def events():
                     cam.focus(-1)
                 if buttons['focus_wide'].pressed(pygame.mouse.get_pos()):
                     cam.focus(1)
+                if buttons['quality_up'].pressed(pygame.mouse.get_pos()):
+                    cam.setCompression(5, False)
+                if buttons['quality_down'].pressed(pygame.mouse.get_pos()):
+                    cam.setCompression(-5, False)
 
 #################
 # main-function #
@@ -405,7 +475,7 @@ while 1:
         image_new = Image.open(stream)
         
         #test:
-        #image_new = Image.open("test.jpg")
+        #image_new = Image.open("test3.jpg")
         #error_no_elmo = False
         #:test
 
@@ -433,7 +503,7 @@ while 1:
         if screen is None:
             start_size = reduce_to_screen_size(image, info)
             screen = pygame.display.set_mode(start_size,RESIZABLE)
-            pygame.display.set_caption(str("Free ELMO Version " + version)) #set msg of the window
+            pygame.display.set_caption(str("freeELMO Version " + version)) #set msg of the window
             screen_res = screen.get_size()
             image_size = image.get_size()
             
@@ -460,15 +530,29 @@ while 1:
             buttons = draw_interface(screen, screen.get_size(), buttons, error_no_elmo, basic_font, DGRAY, LGRAY)
         #display error massage when no image is delivered
         if error_no_image:
-            string = "\n   Can't get a new image.\n"
-            textRect = pygame.Rect((10, 10, 200, 50))
-            rendered_text = render_textrect(string, pygame.font.SysFont("", 24), textRect, LGRAY, DGRAY, 0)
+            string = "\n  Can't get a new image.  "
+            #calculating the box size
+            temp_font_size = int((screen.get_size()[0]/12)/2)
+            temp_width = temp_font_size * 3
+            temp_height = temp_font_size * 0.75
+            #print the boy on the screen
+            fits=False
+            rendered_text = False
+            while not fits:
+                try:
+                    textRect = pygame.Rect((0, 0, temp_width, temp_height))
+                    textRect.centerx = screen.get_rect().centerx
+                    rendered_text = render_textrect(string, pygame.font.SysFont(basic_font, temp_font_size-1), textRect, LGRAY, DGRAY, 0)
+                    fits = True
+                except:
+                    temp_font_size = temp_font_size - 1
+                    if temp_font_size == 0: fits = True
             if rendered_text:
                 screen.blit(rendered_text, textRect)        
     
     if error_no_elmo == True or image == None:
         if screen_res == None:
-            screen_res = [400, 300]
+            screen_res = [480, 320]
         screen = pygame.display.set_mode(screen_res,RESIZABLE)
         pygame.display.set_caption(str("ERROR!!! - Free ELMO Version " + version)) #set msg of the window
         #define string to display
@@ -476,7 +560,7 @@ while 1:
         if error_no_elmo:
             error_string = error_string + "\n\n    No Camera found    "
         if error_no_image:
-            error_string = error_string + "\n\n    Didn't get a Image "
+            error_string = error_string + "\n\n    Can't get a Image "
         #create rectangle
         textRect = pygame.Rect((0, 0, screen_res[0], screen_res[1]))
         #set rectangle position to middle of the screen
