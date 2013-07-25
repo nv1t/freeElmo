@@ -41,6 +41,16 @@ class Elmo:
 
         return self
 
+    def setCompression(self,compression,absolute=True):
+        if absolute:
+            self.compression = compression
+        else:
+            self.compression = self.compression+compression
+        self.compression = max(10,min(100,self.compression))
+
+    def getCompression(self):
+        return self.compression
+
     def zoom(self,i):
         if self.zooming:
             self.device.write(0x02,self.msg['zoom_stop'],0)
