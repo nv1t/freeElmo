@@ -98,9 +98,9 @@ and stopped. That's why there is a stop command.
 
 (IN 01:00:83, OUT 01:00:04)
 
-    << 0000 0000 1800 0000 8E80 0000 5000 0000 
+    << 0000 0000 1800 0000 8E80 0000 KK00 0000 
     << 0000 0000 0000 0000 0000 0000 0000 0000
-    >> 0000 0000 1800 0000 XXXX 0000 5000 0000 
+    >> 2000 0000 1800 0000 XXXX 0000 0000 0000 
     >> 0000 0000 0000 0000 0000 0000 0000 0000 
     >> 0200 0000 DDDD 0000 PPPPPPPPPPPPPPPPPPP
     >> PPPP ....
@@ -108,5 +108,6 @@ and stopped. That's why there is a stop command.
     >> PPPP ....
 
 * X : size of picture without header
+* K : JPEG Compression 10-100
 * P : picture as bytestream (splitted in max 65272 bytes + 8 byte header)
 * D : size of packet payload, max size: 0xfef8
