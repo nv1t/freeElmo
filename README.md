@@ -1,3 +1,6 @@
+> :warning: **This Project is 8 years old**: I refer to a newer project, based on this one. They modified the code some extent to provide better timeouts in the USB communication and maybe it will be more active in development: https://github.com/StefanMack/DokuCam
+
+
 freeElmo
 ========
 
